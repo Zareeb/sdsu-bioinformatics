@@ -1,7 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
-
-  // Executive board names (must match CSV values, check members.csv)
-  // Ideally this would be done via SQL?
+  // Future you (or someone else):
+  // Make sure execBoard name matches names in the csv (or whatever database it will be on in the future)
   const execBoard = [
     "Natalia Contreras",
     "Kayla Poirier",
@@ -10,37 +9,46 @@ document.addEventListener("DOMContentLoaded", function () {
     "Zareeb Lorenzana"
   ];
 
-  fetch("/members.csv")
-    .then(response => response.text())
-    .then(csv => {
-      const rows = csv.trim().split("\n").slice(1); // skip header
+  // Retrieve members list from json file. Location could change in the future
+  fetch("/members.json")
+    .then(response => response.json())
+    .then(data => {
+
+      // elementId needs to match div id in members html file
       const container = document.getElementById("member-list");
 
-      rows.forEach(row => {
-        const cols = row.split(",");
+      // Sort alphabetically by last name, then first name
+      data.sort((a, b) => {
+        if (a.last_name === b.last_name) {
+          return a.first_name.localeCompare(b.first_name);
+        }
+        return a.last_name.localeCompare(b.last_name);
+      });
 
-        const firstName = cols[0].trim();
-        const lastName = cols[1].trim();
-        const major = cols[2].trim();
-        const status = cols[3] ? cols[3].trim() : "";
+      data.forEach(member => {
 
-        const fullName = `${firstName} ${lastName}`;
+        const fullName = `${member.first_name} ${member.last_name}`;
 
-        // Exclude executive board
+        // Skip executive board
         if (execBoard.includes(fullName)) return;
 
         const memberDiv = document.createElement("div");
         memberDiv.classList.add("board-member");
 
+        const showGraduate =
+          member.status &&
+          member.status.toLowerCase().includes("graduate");
+
         memberDiv.innerHTML = `
           <div class="board-name">${fullName}</div>
-          <div class="board-meta">${major}</div>
-          ${status.toLowerCase().includes("graduate") 
-            ? `<div class="board-meta">${status}</div>` 
-            : ""}
+          <div class="board-meta">${member.major || ""}</div>
+          ${showGraduate ? `<div class="board-meta">${member.status}</div>` : ""}
         `;
 
         container.appendChild(memberDiv);
       });
+    })
+    .catch(error => {
+      console.error("Error loading members:", error);
     });
 });
