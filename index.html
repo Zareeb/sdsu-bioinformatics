@@ -7,19 +7,24 @@
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="static/css/styles.css">
+    <script src="static/js/menu.js"></script>
 </head>
 <body>
 
 <nav class="site-nav">
-    <div class="container nav-inner">
-        <div class="logo">SDSU Bioinformatics Student Association</div>
-        <div class="nav-links">
-            <a href="index.html">Home</a>
-            <a href="about.html">About</a>
-            <a href="members.html">Members</a>
-            <a href="https://informatics.sdsu.edu/">SDSU Bioinformatics Program</a>
-        </div>
+  <div class="container nav-inner">
+    <div class="logo">SDSU Bioinformatics Student Association</div>
+
+    <button class="menu-toggle" id="menu-toggle">
+      ☰
+    </button>
+
+    <div class="nav-links" id="nav-links">
+      <a href="/">Home</a>
+      <a href="/members/">Members</a>
+      <a href="https://informatics.sdsu.edu/">SDSU Bioinformatics Program</a>
     </div>
+  </div>
 </nav>
 
 <section class="hero">

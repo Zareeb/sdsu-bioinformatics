@@ -1,3 +1,7 @@
+/* ================================
+   DESIGN TOKENS
+================================ */
+
 :root {
     --sdsu-red: #A6192E;
     --sdsu-red-dark: #8E1728;
@@ -8,12 +12,29 @@
     --white: #FFFFFF;
 }
 
-body {
+/* ================================
+   BASE LAYOUT
+================================ */
+
+html, body {
+    height: 100%;
     margin: 0;
+}
+
+body {
     font-family: "Inter", sans-serif;
     background-color: var(--bg-light);
     color: var(--text-primary);
     line-height: 1.6;
+
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    overflow-y: scroll;
+}
+
+main {
+    flex: 1;
 }
 
 .container {
@@ -22,10 +43,15 @@ body {
     padding: 0 2rem;
 }
 
+/* ================================
+   NAVIGATION
+================================ */
+
 .site-nav {
     background: var(--white);
     border-bottom: 1px solid var(--border-light);
     padding: 1rem 0;
+    position: relative;
 }
 
 .nav-inner {
@@ -37,10 +63,15 @@ body {
 .logo {
     font-weight: 700;
     color: var(--sdsu-red);
+    font-size: 1.1rem;
+}
+
+.nav-links {
+    display: flex;
+    gap: 2rem;
 }
 
 .nav-links a {
-    margin-left: 2rem;
     text-decoration: none;
     color: var(--text-secondary);
     font-weight: 500;
@@ -49,6 +80,19 @@ body {
 .nav-links a:hover {
     color: var(--sdsu-red);
 }
+
+/* Hamburger button */
+.menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    font-size: 1.8rem;
+    cursor: pointer;
+}
+
+/* ================================
+   HERO
+================================ */
 
 .hero {
     background: var(--sdsu-red);
@@ -71,6 +115,10 @@ body {
     margin: 0 auto;
 }
 
+/* ================================
+   SECTIONS
+================================ */
+
 .section {
     padding: 4rem 0;
 }
@@ -80,26 +128,45 @@ body {
     margin-bottom: 2rem;
 }
 
-.card {
-    background: var(--white);
-    border: 1px solid var(--border-light);
-    padding: 1.75rem;
-    border-radius: 6px;
+/* ================================
+   BOARD GRID
+================================ */
+
+.board-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2.5rem 3rem;
+    margin-top: 2rem;
 }
 
-.card-title {
+.board-member {
+    border-bottom: 1px solid var(--border-light);
+    padding-bottom: 1.25rem;
+}
+
+.board-role {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--sdsu-red);
+    font-weight: 600;
+    margin-bottom: 0.4rem;
+}
+
+.board-name {
+    font-size: 1.2rem;
     font-weight: 600;
 }
 
-.card-meta {
+.board-meta {
+    font-size: 0.95rem;
     color: var(--text-secondary);
-    font-size: 0.9rem;
-    margin: 0.5rem 0;
+    margin-top: 0.25rem;
 }
 
-.card-description {
-    color: var(--text-secondary);
-}
+/* ================================
+   FOOTER
+================================ */
 
 .site-footer {
     background: var(--white);
@@ -108,4 +175,45 @@ body {
     font-size: 0.9rem;
     color: var(--text-secondary);
     text-align: center;
+
+    margin-top: auto;
+}
+
+/* ================================
+   RESPONSIVE NAV
+================================ */
+
+@media (max-width: 768px) {
+
+    .menu-toggle {
+        display: block;
+    }
+
+    .nav-links {
+        display: none;
+        flex-direction: column;
+        position: absolute;
+        top: 70px;
+        right: 20px;
+        background: var(--white);
+        border: 1px solid var(--border-light);
+        padding: 1rem 1.5rem;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    }
+
+    .nav-links.active {
+        display: flex;
+    }
+
+    .nav-links a {
+        margin: 0.5rem 0;
+    }
+
+    .hero-title {
+        font-size: 1.8rem;
+    }
+
+    .container {
+        padding: 0 1.25rem;
+    }
 }
