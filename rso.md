@@ -4,7 +4,7 @@
 - September 1, 2026
 
 ## Training dates
-- ILAT part A and B in-person: 8/28 Friday 9:30 AM - 12:00 PM @ Templo Mayor
+- ILAT part A and B in-person: 8/28 Friday 9:30 AM - 12:00 PM @ Templo Mayor. Part A can be done online
 - ILAT part B in-person: 8/28 Friday 1:00 PM - 2:15 PM @ Templo Mayor
 
 ## TO-DO
