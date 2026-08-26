@@ -25,10 +25,10 @@ This is done via Zoom if you're not doing the in-person one. See above. Zoom reg
 - Meilyn
 - Mrunal
 - Sam
-- Zar
+- ~~Zar~~
 
 #### Schedule for part B
-- 8/26 2:00 - 3:00 PM via Zoom
+- ~~8/26 2:00 - 3:00 PM via Zoom~~
 - 8/28 1:00 - 2:15 PM in-person
 
 ### Complete RSO3 training
