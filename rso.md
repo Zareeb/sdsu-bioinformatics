@@ -8,7 +8,6 @@
 - ILAT part B in-person: 8/28 Friday 1:00 PM - 2:15 PM @ Templo Mayor. Part B can be done online via Zoom.
 
 ## TO-DO
-### 
 Some of the videos on the Canvas training can be fast-forwarded beyond the available playback rate by right-clicking > inspect element > console and entering 
 `document.querySelector('video').playbackRate = 10;`
 
