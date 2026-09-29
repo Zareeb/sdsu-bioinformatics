@@ -1,0 +1,19 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "sdsu-bioinformatics",
+  "main": "src/sdsu_bioinformatics/app.py",
+  "compatibility_date": "2026-09-28",
+  "compatibility_flags": [
+    "python_workers"
+  ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "bisa-db",
+      "database_id": "1681dd34-6df0-4f58-91df-a9cdaf3f854e"
+    }
+  ],
+  "observability": {
+    "enabled": true
+  }
+}

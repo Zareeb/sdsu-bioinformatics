@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}Members | SDSU Bioinformatics Student Association{% endblock %}
+
+{% block content %}
+<h1>Members</h1>
+{% if not database_configured %}
+<p>The member directory is awaiting its D1 database binding.</p>
+{% elif members %}
+<table>
+    <thead>
+        <tr>
+            <th scope="col">Name</th>
+            <th scope="col">Major</th>
+            <th scope="col">Status</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for member in members %}
+        <tr>
+            <td>{{ member.first_name }} {{ member.last_name }}</td>
+            <td>{{ member.major }}</td>
+            <td>{{ member.status or "Member" }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>No members have been published yet.</p>
+{% endif %}
+{% endblock %}

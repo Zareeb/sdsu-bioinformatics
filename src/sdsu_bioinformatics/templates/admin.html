@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Admin | SDSU Bioinformatics Student Association{% endblock %}
+
+{% block content %}
+<h1>Admin</h1>
+<p>Signed in as {{ user.name }} ({{ user.email }}).</p>
+<p><a href="{{ url_for('logout') }}">Sign out</a></p>
+
+<h2>Add member</h2>
+<form method="post" action="{{ url_for('create_member') }}">
+	<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+	<label>First name <input name="first_name" required maxlength="80"></label>
+	<label>Last name <input name="last_name" required maxlength="120"></label>
+	<label>Major <input name="major" required maxlength="160"></label>
+	<label>Status <input name="status" maxlength="80"></label>
+	<label>Email <input type="email" name="email" maxlength="254"></label>
+	<button type="submit">Add member</button>
+</form>
+
+<h2>Manage members</h2>
+{% for member in members %}
+<form method="post" action="{{ url_for('update_member', member_id=member.id) }}">
+	<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+	<input name="first_name" value="{{ member.first_name }}" required maxlength="80">
+	<input name="last_name" value="{{ member.last_name }}" required maxlength="120">
+	<input name="major" value="{{ member.major }}" required maxlength="160">
+	<input name="status" value="{{ member.status }}" maxlength="80">
+	<input type="email" name="email" value="{{ member.email or '' }}" maxlength="254">
+	<button type="submit">Save</button>
+</form>
+<form method="post" action="{{ url_for('delete_member', member_id=member.id) }}">
+	<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+	<button type="submit">Delete {{ member.first_name }} {{ member.last_name }}</button>
+</form>
+{% else %}
+<p>No members found.</p>
+{% endfor %}
+
+<p><a href="{{ url_for('logout') }}">Sign out</a></p>
+{% endblock %}
