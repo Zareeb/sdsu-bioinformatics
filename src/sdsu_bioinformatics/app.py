@@ -9,7 +9,11 @@ from pyodide.ffi import run_sync
 from workers import wsgi
 
 
-app = Flask(__name__)
+app = Flask(
+    __name__,
+    static_folder="../../static",
+    static_url_path="",
+)
 
 GOOGLE_AUTHORIZATION_URL = "https://accounts.google.com/o/oauth2/v2/auth"
 GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
@@ -89,6 +93,8 @@ def _member_values():
         "major": request.form.get("major", "").strip(),
         "status": request.form.get("status", "").strip(),
         "email": request.form.get("email", "").strip().lower(),
+        "position": request.form.get("position", "").strip(),
+        "public": 1 if request.form.get("public") == "1" else 0,
     }
     limits = {
         "first_name": 80,
@@ -96,6 +102,7 @@ def _member_values():
         "major": 160,
         "status": 80,
         "email": 254,
+        "position": 120,
     }
     if any(not values[field] for field in ("first_name", "last_name", "major")):
         abort(400, description="First name, last name, and major are required")
@@ -111,7 +118,7 @@ def _admin_members():
     result = run_sync(
         database.prepare(
             """
-            SELECT rowid AS id, first_name, last_name, major, status, email
+            SELECT rowid AS id, first_name, last_name, major, status, email, position, public
             FROM members
             ORDER BY last_name, first_name
             """
@@ -135,8 +142,9 @@ def members():
     result = run_sync(
         database.prepare(
             """
-            SELECT rowid AS id, first_name, last_name, major, status, email
+            SELECT rowid AS id, first_name, last_name, major, status, email, position, public
             FROM members
+            WHERE public = 1
             ORDER BY last_name, first_name
             """
         ).all()
@@ -300,8 +308,8 @@ def create_member():
     run_sync(
         database.prepare(
             """
-            INSERT INTO members (first_name, last_name, major, status, email)
-            VALUES (?, ?, ?, ?, ?)
+            INSERT INTO members (first_name, last_name, major, status, email, position, public)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
             """
         )
         .bind(
@@ -310,6 +318,8 @@ def create_member():
             values["major"],
             values["status"],
             values["email"],
+            values["position"],
+            values["public"],
         )
         .run()
     )
@@ -331,6 +341,7 @@ def update_member(member_id):
             """
             UPDATE members
             SET first_name = ?, last_name = ?, major = ?, status = ?, email = ?,
+                position = ?, public = ?,
                 updated_at = CURRENT_TIMESTAMP
             WHERE rowid = ?
             """
@@ -341,6 +352,8 @@ def update_member(member_id):
             values["major"],
             values["status"],
             values["email"],
+            values["position"],
+            values["public"],
             member_id,
         )
         .run()

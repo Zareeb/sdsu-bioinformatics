@@ -6,6 +6,10 @@
   "compatibility_flags": [
     "python_workers"
   ],
+  "assets": {
+    "directory": "./static",
+    "binding": "ASSETS"
+  },
   "d1_databases": [
     {
       "binding": "DB",

@@ -1,15 +1,38 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}SDSU Bioinformatics Student Association{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <script src="{{ url_for('static', filename='js/menu.js') }}" defer></script>
 </head>
 <body>
-    <nav>
-        <a href="/">SDSU Bioinformatics Student Association</a>
-        <a href="/members">Members</a>
+    <nav class="site-nav">
+      <div class="container nav-inner">
+        <div class="logo">SDSU Bioinformatics Student Association</div>
+
+        <button class="menu-toggle" id="menu-toggle" aria-label="Toggle navigation">
+          ☰
+        </button>
+
+        <div class="nav-links" id="nav-links">
+          <a href="/">Home</a>
+          <a href="/members">Members</a>
+          <a href="https://informatics.sdsu.edu/">SDSU Bioinformatics Program</a>
+        </div>
+      </div>
     </nav>
+
     <main>{% block content %}{% endblock %}</main>
+
+    <footer class="site-footer">
+        <div class="container">
+            This site is student-operated and not an official SDSU departmental website.
+        </div>
+    </footer>
 </body>
 </html>

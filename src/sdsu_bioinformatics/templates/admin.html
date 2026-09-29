@@ -3,39 +3,59 @@
 {% block title %}Admin | SDSU Bioinformatics Student Association{% endblock %}
 
 {% block content %}
-<h1>Admin</h1>
-<p>Signed in as {{ user.name }} ({{ user.email }}).</p>
-<p><a href="{{ url_for('logout') }}">Sign out</a></p>
+<section class="section admin-page">
+    <div class="container admin-shell">
+        <div class="admin-topbar">
+            <div>
+                <h2 class="section-title">Admin</h2>
+                <p>Signed in as {{ user.name }} ({{ user.email }}).</p>
+            </div>
+            <a class="button button-secondary" href="{{ url_for('logout') }}">Sign out</a>
+        </div>
 
-<h2>Add member</h2>
-<form method="post" action="{{ url_for('create_member') }}">
-	<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-	<label>First name <input name="first_name" required maxlength="80"></label>
-	<label>Last name <input name="last_name" required maxlength="120"></label>
-	<label>Major <input name="major" required maxlength="160"></label>
-	<label>Status <input name="status" maxlength="80"></label>
-	<label>Email <input type="email" name="email" maxlength="254"></label>
-	<button type="submit">Add member</button>
-</form>
+        <div class="admin-card">
+            <h3>Add member</h3>
+            <form class="member-form" method="post" action="{{ url_for('create_member') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <div class="form-grid">
+                    <label>First name <input name="first_name" required maxlength="80"></label>
+                    <label>Last name <input name="last_name" required maxlength="120"></label>
+                    <label>Major <input name="major" required maxlength="160"></label>
+                    <label>Status <input name="status" maxlength="80"></label>
+                    <label class="full-width">Email <input type="email" name="email" maxlength="254"></label>
+                    <label>Position <input name="position" maxlength="120"></label>
+                    <label><input type="checkbox" name="public" value="1" checked> Public on members page</label>
+                </div>
+                <button class="button" type="submit">Add member</button>
+            </form>
+        </div>
 
-<h2>Manage members</h2>
-{% for member in members %}
-<form method="post" action="{{ url_for('update_member', member_id=member.id) }}">
-	<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-	<input name="first_name" value="{{ member.first_name }}" required maxlength="80">
-	<input name="last_name" value="{{ member.last_name }}" required maxlength="120">
-	<input name="major" value="{{ member.major }}" required maxlength="160">
-	<input name="status" value="{{ member.status }}" maxlength="80">
-	<input type="email" name="email" value="{{ member.email or '' }}" maxlength="254">
-	<button type="submit">Save</button>
-</form>
-<form method="post" action="{{ url_for('delete_member', member_id=member.id) }}">
-	<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-	<button type="submit">Delete {{ member.first_name }} {{ member.last_name }}</button>
-</form>
-{% else %}
-<p>No members found.</p>
-{% endfor %}
-
-<p><a href="{{ url_for('logout') }}">Sign out</a></p>
+        <div class="admin-card">
+            <h3>Manage members</h3>
+            {% for member in members %}
+                <form class="member-form member-row" method="post" action="{{ url_for('update_member', member_id=member.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <div class="form-grid compact">
+                        <label>First name <input name="first_name" value="{{ member.first_name }}" required maxlength="80"></label>
+                        <label>Last name <input name="last_name" value="{{ member.last_name }}" required maxlength="120"></label>
+                        <label>Major <input name="major" value="{{ member.major }}" required maxlength="160"></label>
+                        <label>Status <input name="status" value="{{ member.status }}" maxlength="80"></label>
+                        <label class="full-width">Email <input type="email" name="email" value="{{ member.email or '' }}" maxlength="254"></label>
+                        <label>Position <input name="position" value="{{ member.position or '' }}" maxlength="120"></label>
+                        <label><input type="checkbox" name="public" value="1" {% if member.public %}checked{% endif %}> Public on members page</label>
+                    </div>
+                    <div class="button-row">
+                        <button class="button" type="submit">Save</button>
+                    </div>
+                </form>
+                <form method="post" action="{{ url_for('delete_member', member_id=member.id) }}" class="delete-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <button class="button button-danger" type="submit">Delete {{ member.first_name }} {{ member.last_name }}</button>
+                </form>
+            {% else %}
+                <p>No members found.</p>
+            {% endfor %}
+        </div>
+    </div>
+</section>
 {% endblock %}
