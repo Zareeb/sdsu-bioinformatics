@@ -8,3 +8,4 @@ csv_to_json.py
 .github/
 .python-version
 python_modules/
+/members.sql

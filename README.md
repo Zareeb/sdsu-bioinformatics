@@ -21,19 +21,18 @@ For deployment, configure the same values as Worker secrets or environment
 bindings. `GOOGLE_ADMIN_EMAILS` is a comma-separated explicit allowlist; an
 authenticated Google account not in that list is rejected.
 
-Create a D1 database, replace the placeholder `database_id` in `wrangler.jsonc`,
-then apply the schema locally or remotely:
+The D1 database binding is configured in `wrangler.jsonc`. Apply pending schema
+migrations to the local or remote database with:
 
 ```sh
-uv run pywrangler d1 migrations apply sdsu-bioinformatics-members --local
-uv run pywrangler d1 migrations apply sdsu-bioinformatics-members --remote
+uv run pywrangler d1 migrations apply bisa-db --local
+uv run pywrangler d1 migrations apply bisa-db --remote
 ```
 
-To load the initial member directory after applying the schema:
+`migrations/0001_create_members.sql` defines the current live schema and does
+not seed member data. Production D1 already has the older seed and additive
+migrations recorded, so use `0004_*.sql` or a higher prefix for future
+migrations. New databases can start from the current DDL baseline.
 
-```sh
-uv run pywrangler d1 migrations apply sdsu-bioinformatics-members --local
-```
-
-The current member data in `members.csv` and `members.json` is migration input
-only. Production reads should come from D1.
+Production member reads and updates use D1. A live export in `members.sql` may
+contain private member data and is ignored by Git; do not publish it.

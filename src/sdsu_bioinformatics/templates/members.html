@@ -19,9 +19,6 @@
                         <div class="board-name">{{ member.first_name }} {{ member.last_name }}</div>
                         <div class="board-meta">{{ member.major }}</div>
                         <div class="board-meta">{{ member.status or 'Member' }}</div>
-                        {% if member.email %}
-                            <div class="board-meta">{{ member.email }}</div>
-                        {% endif %}
                     </article>
                 {% endfor %}
             </div>

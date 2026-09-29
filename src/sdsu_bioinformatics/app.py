@@ -1,5 +1,9 @@
+import csv
 import hmac
+import io
+import json
 import secrets
+from datetime import datetime, timezone
 from urllib.parse import urlencode
 
 import httpx
@@ -118,7 +122,8 @@ def _admin_members():
     result = run_sync(
         database.prepare(
             """
-            SELECT rowid AS id, first_name, last_name, major, status, email, position, public
+                 SELECT rowid AS id, first_name, last_name, major, status, email,
+                     position, public, created_at, updated_at
             FROM members
             ORDER BY last_name, first_name
             """
@@ -142,7 +147,7 @@ def members():
     result = run_sync(
         database.prepare(
             """
-            SELECT rowid AS id, first_name, last_name, major, status, email, position, public
+            SELECT rowid AS id, first_name, last_name, major, status, position, public
             FROM members
             WHERE public = 1
             ORDER BY last_name, first_name
@@ -292,6 +297,62 @@ def admin():
         secure=True,
         samesite="Lax",
     )
+    return response
+
+
+@app.get("/admin/export/backup.json")
+def export_backup():
+    user = _require_admin()
+    if not isinstance(user, dict):
+        return user
+    payload = {
+        "format_version": 1,
+        "exported_at": datetime.now(timezone.utc).isoformat(),
+        "members": [dict(member) for member in _admin_members()],
+    }
+    response = app.response_class(
+        json.dumps(payload, indent=2),
+        mimetype="application/json",
+    )
+    response.headers["Content-Disposition"] = 'attachment; filename="members-backup.json"'
+    response.headers["Cache-Control"] = "no-store"
+    return response
+
+
+@app.get("/admin/export/members.csv")
+def export_members_csv():
+    user = _require_admin()
+    if not isinstance(user, dict):
+        return user
+
+    fields = (
+        "id",
+        "first_name",
+        "last_name",
+        "major",
+        "status",
+        "email",
+        "position",
+        "public",
+        "created_at",
+        "updated_at",
+    )
+    output = io.StringIO(newline="")
+    writer = csv.DictWriter(output, fieldnames=fields)
+    writer.writeheader()
+    for member in _admin_members():
+        row = {}
+        for field in fields:
+            value = member.get(field)
+            text = "" if value is None else str(value)
+            if text.lstrip(" \t\r\n").startswith(("=", "+", "-", "@")):
+                text = "'" + text
+            row[field] = text
+        writer.writerow(row)
+
+    response = app.response_class(output.getvalue(), mimetype="text/csv")
+    response.headers["Content-Disposition"] = 'attachment; filename="members.csv"'
+    response.headers["Cache-Control"] = "no-store"
     return response
 
 

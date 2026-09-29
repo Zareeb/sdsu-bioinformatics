@@ -188,6 +188,12 @@ p {
     flex-wrap: wrap;
 }
 
+.admin-actions {
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+}
+
 .admin-card {
     background: var(--white);
     border: 1px solid var(--border-light);
