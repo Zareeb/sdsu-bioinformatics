@@ -1,38 +1,199 @@
-## Development
+# SDSU Bioinformatics Student Association Website
 
-This site runs as a Python Worker using Flask, Jinja, and Cloudflare D1.
-The Worker application entrypoint is `src/sdsu_bioinformatics/app.py`.
+Website and member administration system for the SDSU Bioinformatics Student
+Association (BiSA).
 
-Install dependencies and start the local Worker:
+**Website:** https://sdsubioinformatics.org
+
+## Stack
+
+- Python / Flask
+- Cloudflare Workers
+- Cloudflare D1
+- Google OAuth
+- `uv` / `pywrangler`
+- Squarespace (domain registration only)
+
+## Local development
+
+Requirements:
+
+- Python 3.13+
+- `uv`
+- Node.js/npm
+
+Install dependencies:
 
 ```sh
 uv sync
-uv run pywrangler dev
 ```
 
-For local Google OAuth configuration, copy `.dev.vars.example` to `.dev.vars`
-and replace every placeholder. Register this callback URL in Google Cloud:
+Create local environment variables:
 
-```text
-http://localhost:8787/auth/google/callback
+```sh
+cp .dev.vars.example .dev.vars
 ```
 
-For deployment, configure the same values as Worker secrets or environment
-bindings. `GOOGLE_ADMIN_EMAILS` is a comma-separated explicit allowlist; an
-authenticated Google account not in that list is rejected.
-
-The D1 database binding is configured in `wrangler.jsonc`. Apply pending schema
-migrations to the local or remote database with:
+Then run:
 
 ```sh
 uv run pywrangler d1 migrations apply bisa-db --local
+uv run pywrangler dev --port 8787
+```
+
+Open:
+
+```text
+http://localhost:8787
+```
+
+Local D1 data is separate from production.
+
+## Deployment
+
+Deploy with:
+
+```sh
+uv run pywrangler deploy
+```
+
+The repository is also connected to Cloudflare for automatic deployments.
+
+Production D1 is `bisa-db`, bound to the Worker as `DB`.
+
+## Admin login
+
+Administrators sign in with Google at:
+
+```text
+https://sdsubioinformatics.org/admin
+```
+
+The Worker uses:
+
+```text
+GOOGLE_CLIENT_ID
+GOOGLE_CLIENT_SECRET
+GOOGLE_ADMIN_EMAILS
+SESSION_SECRET
+```
+
+`GOOGLE_CLIENT_SECRET` and `SESSION_SECRET` are Cloudflare **secrets**.
+
+`GOOGLE_CLIENT_ID` and `GOOGLE_ADMIN_EMAILS` may be Cloudflare **text variables**.
+
+`GOOGLE_ADMIN_EMAILS` is a comma-separated allowlist:
+
+```text
+club@example.com,president@example.com,vp-membership@example.com
+```
+
+Do not put OAuth secrets or session secrets in Git.
+
+## Google OAuth
+
+The Google OAuth client needs these authorized redirect URIs:
+
+```text
+http://localhost:8787/auth/google/callback
+https://sdsubioinformatics.org/auth/google/callback
+```
+
+If using the `workers.dev` address for admin login, its callback URI must also
+be registered with Google.
+
+## Officer handoff
+
+Before officers leave, make sure incoming officers have the access they need.
+
+At least two current officers should be able to recover or access:
+
+- Cloudflare
+- GitHub
+- Google Cloud OAuth configuration
+- Squarespace domain registration
+- Club Gmail
+
+The club Gmail should remain in `GOOGLE_ADMIN_EMAILS` as a permanent recovery
+administrator.
+
+When the President or VP of Membership changes:
+
+1. Open Cloudflare → `sdsu-bioinformatics` → Settings → Variables and Secrets.
+2. Edit the `GOOGLE_ADMIN_EMAILS` text variable.
+3. Add the incoming officer's Google email.
+4. Test that the incoming officer can log into `/admin`.
+5. Remove outgoing officers who no longer need access.
+
+Do not remove the club Gmail account from the admin list.
+
+## Domain
+
+`sdsubioinformatics.org` is:
+
+- registered through Squarespace
+- using Cloudflare DNS
+- connected to the `sdsu-bioinformatics` Worker
+
+Do not cancel the Squarespace domain registration just because the website
+itself runs on Cloudflare.
+
+## Member data
+
+Production member data lives in D1.
+
+Routine membership changes should be made through `/admin`, not by editing SQL.
+
+Member exports such as these should not be committed:
+
+```text
+members.csv
+members.json
+members.sql
+```
+
+Schema changes belong in `migrations/`.
+
+## D1 migrations
+
+Test migrations locally first:
+
+```sh
+uv run pywrangler d1 migrations apply bisa-db --local
+```
+
+Apply reviewed migrations to production with:
+
+```sh
 uv run pywrangler d1 migrations apply bisa-db --remote
 ```
 
-`migrations/0001_create_members.sql` defines the current live schema and does
-not seed member data. Production D1 already has the older seed and additive
-migrations recorded, so use `0004_*.sql` or a higher prefix for future
-migrations. New databases can start from the current DDL baseline.
+The `--remote` command modifies the production database. Don't freestyle SQL
+against production unless you have a good reason and preferably a backup.
 
-Production member reads and updates use D1. A live export in `members.sql` may
-contain private member data and is ignored by Git; do not publish it.
+## Useful commands
+
+```sh
+# Run locally
+uv run pywrangler dev --port 8787
+
+# Deploy
+uv run pywrangler deploy
+
+# Check Cloudflare login
+uv run pywrangler whoami
+
+# Apply local migrations
+uv run pywrangler d1 migrations apply bisa-db --local
+
+# Apply production migrations
+uv run pywrangler d1 migrations apply bisa-db --remote
+```
+
+## Future maintainers
+
+Routine member management requires only `/admin`. You do not need VS Code,
+GitHub, Wrangler, or direct database access just to add or edit members.
+
+Keep the architecture simple. This is a student organization website, not a
+bank, Kubernetes cluster, or orbital control system.
