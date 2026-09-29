@@ -262,7 +262,7 @@ def google_callback():
 
     email = str(profile.get("email", "")).strip().lower()
     if not email or not profile.get("email_verified") or email not in _admin_emails():
-        abort(403, description="Google account is not an approved administrator")
+        abort(403, description="I'm sorry Dave, I'm afraid I can't do that.)
 
     session = _serializer("admin-session").dumps(
         {
