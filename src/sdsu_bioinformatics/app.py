@@ -457,4 +457,40 @@ def delete_member(member_id):
     return redirect(url_for("admin"))
 
 
+@app.post("/admin/members/delete-selected")
+def bulk_delete_members():
+    user = _require_admin()
+    if not isinstance(user, dict):
+        return user
+    _check_csrf()
+
+    member_ids = []
+    for raw_id in request.form.getlist("member_ids"):
+        try:
+            member_id = int(raw_id)
+        except (TypeError, ValueError):
+            abort(400, description="Invalid member selection")
+        if member_id <= 0:
+            abort(400, description="Invalid member selection")
+        if member_id not in member_ids:
+            member_ids.append(member_id)
+    if not member_ids:
+        abort(400, description="Select at least one member to delete")
+
+    database = _database()
+    if database is None:
+        abort(503, description="D1 database is not configured")
+    for offset in range(0, len(member_ids), 100):
+        batch = member_ids[offset : offset + 100]
+        placeholders = ", ".join("?" for _ in batch)
+        run_sync(
+            database.prepare(
+                f"DELETE FROM members WHERE rowid IN ({placeholders})"
+            )
+            .bind(*batch)
+            .run()
+        )
+    return redirect(url_for("admin"))
+
+
 Default = wsgi.entrypoint(app)

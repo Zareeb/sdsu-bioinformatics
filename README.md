@@ -142,7 +142,7 @@ itself runs on Cloudflare.
 
 Production member data lives in D1.
 
-Routine membership changes should be made through `/admin`, not by editing SQL.
+Routine membership changes should be made through `/admin`, not by editing SQL. 🙄
 
 Member exports such as these should not be committed:
 
@@ -169,7 +169,7 @@ uv run pywrangler d1 migrations apply bisa-db --remote
 ```
 
 The `--remote` command modifies the production database. Don't freestyle SQL
-against production unless you have a good reason and preferably a backup.
+against production unless you have a good reason and preferably a backup. 😩
 
 ## Useful commands
 

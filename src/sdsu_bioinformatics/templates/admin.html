@@ -36,29 +36,63 @@
 
         <div class="admin-card">
             <h3>Manage members</h3>
-            {% for member in members %}
-                <form class="member-form member-row" method="post" action="{{ url_for('update_member', member_id=member.id) }}">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                    <div class="form-grid compact">
-                        <label>First name <input name="first_name" value="{{ member.first_name }}" required maxlength="80"></label>
-                        <label>Last name <input name="last_name" value="{{ member.last_name }}" required maxlength="120"></label>
-                        <label>Major <input name="major" value="{{ member.major }}" required maxlength="160"></label>
-                        <label>Status <input name="status" value="{{ member.status }}" maxlength="80"></label>
-                        <label class="full-width">Email <input type="email" name="email" value="{{ member.email or '' }}" maxlength="254"></label>
-                        <label>Position <input name="position" value="{{ member.position or '' }}" maxlength="120"></label>
-                        <label><input type="checkbox" name="public" value="1" {% if member.public %}checked{% endif %}> Public on members page</label>
-                    </div>
-                    <div class="button-row">
-                        <button class="button" type="submit">Save</button>
-                    </div>
-                </form>
-                <form method="post" action="{{ url_for('delete_member', member_id=member.id) }}" class="delete-form">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                    <button class="button button-danger" type="submit">Delete {{ member.first_name }} {{ member.last_name }}</button>
-                </form>
+            {% if members %}
+                <div class="member-table-toolbar">
+                    <span>{{ members|length }} members</span>
+                    <form id="bulk-delete-form" method="post" action="{{ url_for('bulk_delete_members') }}" onsubmit="return confirm('Permanently delete the selected members?')">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                        <button class="button button-danger" type="submit">Delete selected</button>
+                    </form>
+                </div>
+                <div class="member-table-wrap">
+                    <table class="member-table">
+                        <thead>
+                            <tr>
+                                <th scope="col"><span class="visually-hidden">Select</span></th>
+                                <th scope="col">First name</th>
+                                <th scope="col">Last name</th>
+                                <th scope="col">Major</th>
+                                <th scope="col">Status</th>
+                                <th scope="col">Email</th>
+                                <th scope="col">Position</th>
+                                <th scope="col">Public</th>
+                                <th scope="col">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for member in members %}
+                            {% set update_form = 'update-member-' ~ member.id %}
+                            <tr>
+                                <td>
+                                    <input form="bulk-delete-form" type="checkbox" name="member_ids" value="{{ member.id }}" aria-label="Select {{ member.first_name }} {{ member.last_name }} for deletion">
+                                </td>
+                                <td><input form="{{ update_form }}" name="first_name" value="{{ member.first_name }}" required maxlength="80" aria-label="First name"></td>
+                                <td><input form="{{ update_form }}" name="last_name" value="{{ member.last_name }}" required maxlength="120" aria-label="Last name"></td>
+                                <td><input form="{{ update_form }}" name="major" value="{{ member.major or '' }}" required maxlength="160" aria-label="Major"></td>
+                                <td><input form="{{ update_form }}" name="status" value="{{ member.status or '' }}" maxlength="80" aria-label="Status"></td>
+                                <td><input form="{{ update_form }}" type="email" name="email" value="{{ member.email or '' }}" maxlength="254" aria-label="Email"></td>
+                                <td><input form="{{ update_form }}" name="position" value="{{ member.position or '' }}" maxlength="120" aria-label="Position"></td>
+                                <td class="member-public-cell">
+                                    <input form="{{ update_form }}" type="checkbox" name="public" value="1" {% if member.public %}checked{% endif %} aria-label="Show {{ member.first_name }} {{ member.last_name }} publicly">
+                                </td>
+                                <td class="member-row-actions">
+                                    <form id="{{ update_form }}" method="post" action="{{ url_for('update_member', member_id=member.id) }}">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                        <button class="button table-button" type="submit">Save</button>
+                                    </form>
+                                    <form method="post" action="{{ url_for('delete_member', member_id=member.id) }}" onsubmit="return confirm('Delete this member?')">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                        <button class="button button-danger table-button" type="submit">Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             {% else %}
                 <p>No members found.</p>
-            {% endfor %}
+            {% endif %}
         </div>
     </div>
 </section>
