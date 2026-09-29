@@ -76,6 +76,22 @@ def _require_admin():
     user = _session_user()
     if user is None:
         return redirect(url_for("google_login", next=request.path))
+    email = user.get("email") if isinstance(user, dict) else None
+    if not isinstance(email, str) or email.strip().lower() not in _admin_emails():
+        response = app.response_class(
+            "I'm sorry Dave, I'm afraid I can't do that.",
+            status=403,
+            mimetype="text/plain",
+        )
+        for cookie in (SESSION_COOKIE, CSRF_COOKIE, STATE_COOKIE):
+            response.delete_cookie(
+                cookie,
+                path="/",
+                secure=True,
+                httponly=True,
+                samesite="Lax",
+            )
+        return response
     return user
 
 
