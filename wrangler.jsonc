@@ -1,6 +1,7 @@
 {
-  "$schema": "node_modules/wrangler/config-schema.json",
   "name": "sdsu-bioinformatics",
+  "keep_vars": true,
+  "$schema": "node_modules/wrangler/config-schema.json",
   "main": "src/sdsu_bioinformatics/app.py",
   "compatibility_date": "2026-09-28",
   "compatibility_flags": [

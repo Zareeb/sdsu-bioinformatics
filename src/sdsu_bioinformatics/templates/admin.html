@@ -13,6 +13,7 @@
             <div class="admin-actions">
                 <a class="button button-secondary" href="{{ url_for('export_backup') }}">Download backup</a>
                 <a class="button button-secondary" href="{{ url_for('export_members_csv') }}">Download CSV</a>
+                <a class="button button-secondary" href="{{ url_for('export_mailing_list') }}">Download email list</a>
                 <a class="button button-secondary" href="{{ url_for('logout') }}">Sign out</a>
             </div>
         </div>
@@ -49,12 +50,12 @@
                         <thead>
                             <tr>
                                 <th scope="col"><span class="visually-hidden">Select</span></th>
-                                <th scope="col">First name</th>
-                                <th scope="col">Last name</th>
-                                <th scope="col">Major</th>
+                                <th class="member-col-first" scope="col">First name</th>
+                                <th class="member-col-last" scope="col">Last name</th>
+                                <th class="member-col-major" scope="col">Major</th>
                                 <th scope="col">Status</th>
-                                <th scope="col">Email</th>
-                                <th scope="col">Position</th>
+                                <th class="member-col-email" scope="col">Email</th>
+                                <th class="member-col-position" scope="col">Position</th>
                                 <th scope="col">Public</th>
                                 <th scope="col">Actions</th>
                             </tr>
@@ -66,12 +67,12 @@
                                 <td>
                                     <input form="bulk-delete-form" type="checkbox" name="member_ids" value="{{ member.id }}" aria-label="Select {{ member.first_name }} {{ member.last_name }} for deletion">
                                 </td>
-                                <td><input form="{{ update_form }}" name="first_name" value="{{ member.first_name }}" required maxlength="80" aria-label="First name"></td>
-                                <td><input form="{{ update_form }}" name="last_name" value="{{ member.last_name }}" required maxlength="120" aria-label="Last name"></td>
-                                <td><input form="{{ update_form }}" name="major" value="{{ member.major or '' }}" required maxlength="160" aria-label="Major"></td>
+                                <td class="member-col-first"><input class="member-input-first" form="{{ update_form }}" name="first_name" value="{{ member.first_name }}" required maxlength="80" aria-label="First name"></td>
+                                <td class="member-col-last"><input class="member-input-last" form="{{ update_form }}" name="last_name" value="{{ member.last_name }}" required maxlength="120" aria-label="Last name"></td>
+                                <td class="member-col-major"><input class="member-input-major" form="{{ update_form }}" name="major" value="{{ member.major or '' }}" required maxlength="160" aria-label="Major"></td>
                                 <td><input form="{{ update_form }}" name="status" value="{{ member.status or '' }}" maxlength="80" aria-label="Status"></td>
-                                <td><input form="{{ update_form }}" type="email" name="email" value="{{ member.email or '' }}" maxlength="254" aria-label="Email"></td>
-                                <td><input form="{{ update_form }}" name="position" value="{{ member.position or '' }}" maxlength="120" aria-label="Position"></td>
+                                <td class="member-col-email"><input class="member-input-email" form="{{ update_form }}" type="email" name="email" value="{{ member.email or '' }}" maxlength="254" aria-label="Email"></td>
+                                <td class="member-col-position"><input class="member-input-position" form="{{ update_form }}" name="position" value="{{ member.position or '' }}" maxlength="120" aria-label="Position"></td>
                                 <td class="member-public-cell">
                                     <input form="{{ update_form }}" type="checkbox" name="public" value="1" {% if member.public %}checked{% endif %} aria-label="Show {{ member.first_name }} {{ member.last_name }} publicly">
                                 </td>

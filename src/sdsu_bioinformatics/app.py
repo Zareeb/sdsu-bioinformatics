@@ -372,6 +372,33 @@ def export_members_csv():
     return response
 
 
+@app.get("/admin/export/mailing-list.csv")
+def export_mailing_list():
+    user = _require_admin()
+    if not isinstance(user, dict):
+        return user
+
+    emails = sorted(
+        {
+            str(member.get("email") or "").strip().lower()
+            for member in _admin_members()
+            if str(member.get("email") or "").strip()
+        }
+    )
+    output = io.StringIO(newline="")
+    writer = csv.writer(output)
+    writer.writerow(["email"])
+    for email in emails:
+        if email.lstrip(" \t\r\n").startswith(("=", "+", "-", "@")):
+            email = "'" + email
+        writer.writerow([email])
+
+    response = app.response_class(output.getvalue(), mimetype="text/csv")
+    response.headers["Content-Disposition"] = 'attachment; filename="mailing-list.csv"'
+    response.headers["Cache-Control"] = "no-store"
+    return response
+
+
 @app.post("/admin/members")
 def create_member():
     user = _require_admin()

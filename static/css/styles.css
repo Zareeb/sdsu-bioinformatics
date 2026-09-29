@@ -253,7 +253,7 @@ p {
 
 .member-table {
     width: 100%;
-    min-width: 1120px;
+    min-width: 1480px;
     border-collapse: collapse;
     text-align: left;
 }
@@ -278,14 +278,36 @@ p {
 }
 
 .member-table input:not([type="checkbox"]) {
-    width: 100%;
-    min-width: 6rem;
+    width: max-content;
+    min-width: 8rem;
+    max-width: 34ch;
+    field-sizing: content;
     padding: 0.5rem;
     border: 1px solid transparent;
     border-radius: 6px;
     box-sizing: border-box;
     font: inherit;
     background: transparent;
+}
+
+.member-table input.member-input-first {
+    min-width: 12ch;
+}
+
+.member-table input.member-input-last {
+    min-width: 16ch;
+}
+
+.member-table input.member-input-major {
+    min-width: 24ch;
+}
+
+.member-table input.member-input-email {
+    min-width: 28ch;
+}
+
+.member-table input.member-input-position {
+    min-width: 18ch;
 }
 
 .member-table input:not([type="checkbox"]):hover,
