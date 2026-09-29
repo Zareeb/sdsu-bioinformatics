@@ -1,2 +1,9 @@
 .venv
+.dev.vars
+.wrangler
+.venv-workers
+__pycache__/
 csv_to_json.py
+.dev.vars.example
+.github/
+.python-version
