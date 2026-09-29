@@ -7,3 +7,4 @@ csv_to_json.py
 .dev.vars.example
 .github/
 .python-version
+python_modules/
