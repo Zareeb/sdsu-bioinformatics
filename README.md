@@ -171,6 +171,12 @@ uv run pywrangler d1 migrations apply bisa-db --remote
 The `--remote` command modifies the production database. Don't freestyle SQL
 against production unless you have a good reason and preferably a backup. 😩
 
+Member create, update, single delete, and bulk delete operations are recorded in
+`member_audit_log`. The admin-only `/admin/audit-log` page displays the newest
+200 entries with actor email, operation, member row ID, timestamp, and before /
+after snapshots. These snapshots include private member fields; keep access to
+the Cloudflare database and admin account restricted to current officers.
+
 ## Useful commands
 
 ```sh

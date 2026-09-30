@@ -4,3 +4,5 @@
 .venv-workers
 python_modules/
 members.sql
+migrations/0004_member_audit_log.sql
+__pycache__/

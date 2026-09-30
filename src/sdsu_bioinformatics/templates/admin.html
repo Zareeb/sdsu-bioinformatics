@@ -11,6 +11,7 @@
                 <p>Signed in as {{ user.name }} ({{ user.email }}).</p>
             </div>
             <div class="admin-actions">
+                <a class="button button-secondary" href="{{ url_for('audit_log') }}">Audit log</a>
                 <a class="button button-secondary" href="{{ url_for('export_backup') }}">Download backup</a>
                 <a class="button button-secondary" href="{{ url_for('export_members_csv') }}">Download CSV</a>
                 <a class="button button-secondary" href="{{ url_for('export_mailing_list') }}">Download email list</a>

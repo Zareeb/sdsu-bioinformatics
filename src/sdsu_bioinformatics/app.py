@@ -148,6 +148,82 @@ def _admin_members():
     return result.results
 
 
+MEMBER_AUDIT_FIELDS = (
+    "first_name",
+    "last_name",
+    "major",
+    "status",
+    "email",
+    "position",
+    "public",
+)
+
+
+def _member_snapshot(member):
+    return {field: member.get(field) for field in MEMBER_AUDIT_FIELDS}
+
+
+def _member_name(member):
+    return f"{member.get('first_name', '')} {member.get('last_name', '')}".strip()
+
+
+def _audit_insert_statement(
+    database,
+    actor_email,
+    operation,
+    member_id,
+    member_name,
+    before,
+    after,
+):
+    return (
+        database.prepare(
+            """
+            INSERT INTO member_audit_log (
+                actor_email, operation, member_rowid, member_name,
+                before_json, after_json, created_at
+            )
+            SELECT ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP
+            WHERE changes() > 0
+            """
+        )
+        .bind(
+            actor_email,
+            operation,
+            member_id,
+            member_name,
+            json.dumps(before, sort_keys=True) if before is not None else None,
+            json.dumps(after, sort_keys=True) if after is not None else None,
+        )
+    )
+
+
+def _admin_audit_entries():
+    database = _database()
+    if database is None:
+        abort(503, description="D1 database is not configured")
+    result = run_sync(
+        database.prepare(
+            """
+            SELECT id, actor_email, operation, member_rowid, member_name,
+                   before_json, after_json, created_at
+            FROM member_audit_log
+            ORDER BY created_at DESC, id DESC
+            LIMIT 200
+            """
+        ).all()
+    )
+    entries = [dict(entry) for entry in result.results]
+    for entry in entries:
+        entry["before"] = (
+            json.loads(entry["before_json"]) if entry["before_json"] else None
+        )
+        entry["after"] = (
+            json.loads(entry["after_json"]) if entry["after_json"] else None
+        )
+    return entries
+
+
 @app.get("/")
 def home():
     return render_template("home.html")
@@ -262,7 +338,7 @@ def google_callback():
 
     email = str(profile.get("email", "")).strip().lower()
     if not email or not profile.get("email_verified") or email not in _admin_emails():
-        abort(403, description="I'm sorry Dave, I'm afraid I can't do that.)
+        abort(403, description="Google account is not an approved administrator")
 
     session = _serializer("admin-session").dumps(
         {
@@ -314,6 +390,14 @@ def admin():
         samesite="Lax",
     )
     return response
+
+
+@app.get("/admin/audit-log")
+def audit_log():
+    user = _require_admin()
+    if not isinstance(user, dict):
+        return user
+    return render_template("audit_log.html", entries=_admin_audit_entries())
 
 
 @app.get("/admin/export/backup.json")
@@ -409,7 +493,7 @@ def create_member():
     database = _database()
     if database is None:
         abort(503, description="D1 database is not configured")
-    run_sync(
+    statements = [
         database.prepare(
             """
             INSERT INTO members (first_name, last_name, major, status, email, position, public)
@@ -424,9 +508,22 @@ def create_member():
             values["email"],
             values["position"],
             values["public"],
-        )
-        .run()
-    )
+        ),
+        database.prepare(
+            """
+            INSERT INTO member_audit_log (
+                actor_email, operation, member_rowid, member_name,
+                before_json, after_json, created_at
+            )
+            VALUES (?, 'CREATE', last_insert_rowid(), ?, NULL, ?, CURRENT_TIMESTAMP)
+            """
+        ).bind(
+            user["email"],
+            _member_name(values),
+            json.dumps(_member_snapshot(values), sort_keys=True),
+        ),
+    ]
+    run_sync(database.batch(statements))
     return redirect(url_for("admin"))
 
 
@@ -440,7 +537,23 @@ def update_member(member_id):
     database = _database()
     if database is None:
         abort(503, description="D1 database is not configured")
-    result = run_sync(
+    before_result = run_sync(
+        database.prepare(
+            """
+            SELECT rowid AS id, first_name, last_name, major, status, email,
+                   position, public
+            FROM members
+            WHERE rowid = ?
+            """
+        )
+        .bind(member_id)
+        .all()
+    )
+    if not before_result.results:
+        abort(404, description="Member not found")
+    before = _member_snapshot(dict(before_result.results[0]))
+    after = _member_snapshot(values)
+    statements = [
         database.prepare(
             """
             UPDATE members
@@ -459,10 +572,19 @@ def update_member(member_id):
             values["position"],
             values["public"],
             member_id,
-        )
-        .run()
-    )
-    if result.meta.rows_written == 0:
+        ),
+        _audit_insert_statement(
+            database,
+            user["email"],
+            "UPDATE",
+            member_id,
+            _member_name(after),
+            before,
+            after,
+        ),
+    ]
+    results = run_sync(database.batch(statements))
+    if results[0].meta.rows_written == 0:
         abort(404, description="Member not found")
     return redirect(url_for("admin"))
 
@@ -476,10 +598,35 @@ def delete_member(member_id):
     database = _database()
     if database is None:
         abort(503, description="D1 database is not configured")
-    result = run_sync(
-        database.prepare("DELETE FROM members WHERE rowid = ?").bind(member_id).run()
+    before_result = run_sync(
+        database.prepare(
+            """
+            SELECT rowid AS id, first_name, last_name, major, status, email,
+                   position, public
+            FROM members
+            WHERE rowid = ?
+            """
+        )
+        .bind(member_id)
+        .all()
     )
-    if result.meta.rows_written == 0:
+    if not before_result.results:
+        abort(404, description="Member not found")
+    before = _member_snapshot(dict(before_result.results[0]))
+    statements = [
+        database.prepare("DELETE FROM members WHERE rowid = ?").bind(member_id),
+        _audit_insert_statement(
+            database,
+            user["email"],
+            "DELETE",
+            member_id,
+            _member_name(before),
+            before,
+            None,
+        ),
+    ]
+    results = run_sync(database.batch(statements))
+    if results[0].meta.rows_written == 0:
         abort(404, description="Member not found")
     return redirect(url_for("admin"))
 
@@ -507,16 +654,54 @@ def bulk_delete_members():
     database = _database()
     if database is None:
         abort(503, description="D1 database is not configured")
+    selected_by_id = {}
     for offset in range(0, len(member_ids), 100):
-        batch = member_ids[offset : offset + 100]
-        placeholders = ", ".join("?" for _ in batch)
-        run_sync(
+        selected_ids = member_ids[offset : offset + 100]
+        placeholders = ", ".join("?" for _ in selected_ids)
+        result = run_sync(
             database.prepare(
-                f"DELETE FROM members WHERE rowid IN ({placeholders})"
+                f"""
+                SELECT rowid AS id, first_name, last_name, major, status, email,
+                       position, public
+                FROM members
+                WHERE rowid IN ({placeholders})
+                """
             )
-            .bind(*batch)
-            .run()
+            .bind(*selected_ids)
+            .all()
         )
+        for result_member in result.results:
+            member = dict(result_member)
+            selected_by_id[int(member["id"])] = member
+
+    selected = [
+        selected_by_id[member_id]
+        for member_id in member_ids
+        if member_id in selected_by_id
+    ]
+    for offset in range(0, len(selected), 40):
+        statements = []
+        for member in selected[offset : offset + 40]:
+            member_id = int(member["id"])
+            before = _member_snapshot(member)
+            statements.extend(
+                (
+                    database.prepare("DELETE FROM members WHERE rowid = ?").bind(
+                        member_id
+                    ),
+                    _audit_insert_statement(
+                        database,
+                        user["email"],
+                        "DELETE",
+                        member_id,
+                        _member_name(before),
+                        before,
+                        None,
+                    ),
+                )
+            )
+        if statements:
+            run_sync(database.batch(statements))
     return redirect(url_for("admin"))
 
 

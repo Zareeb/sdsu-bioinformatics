@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}Member Audit Log | SDSU Bioinformatics Student Association{% endblock %}
+
+{% block content %}
+<section class="section admin-page">
+    <div class="container admin-shell">
+        <div class="admin-topbar">
+            <div>
+                <h2 class="section-title">Member audit log</h2>
+                <p>Showing the latest {{ entries|length }} recorded changes.</p>
+            </div>
+            <a class="button button-secondary" href="{{ url_for('admin') }}">Back to admin</a>
+        </div>
+
+        <div class="admin-card audit-card">
+            {% if entries %}
+                <div class="audit-table-wrap">
+                    <table class="audit-table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Timestamp (UTC)</th>
+                                <th scope="col">Who</th>
+                                <th scope="col">Operation</th>
+                                <th scope="col">Member</th>
+                                <th scope="col">Before / after</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for entry in entries %}
+                            <tr>
+                                <td>{{ entry.created_at }}</td>
+                                <td>{{ entry.actor_email }}</td>
+                                <td>{{ entry.operation }}</td>
+                                <td>{{ entry.member_name }}<br><small>Row {{ entry.member_rowid }}</small></td>
+                                <td>
+                                    <details>
+                                        <summary>View snapshot</summary>
+                                        <div class="audit-snapshots">
+                                            <div>
+                                                <h4>Before</h4>
+                                                {% if entry.before %}
+                                                    <pre>{{ entry.before|tojson(indent=2) }}</pre>
+                                                {% else %}
+                                                    <p>New member</p>
+                                                {% endif %}
+                                            </div>
+                                            <div>
+                                                <h4>After</h4>
+                                                {% if entry.after %}
+                                                    <pre>{{ entry.after|tojson(indent=2) }}</pre>
+                                                {% else %}
+                                                    <p>Member deleted</p>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </details>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p>No member changes have been recorded.</p>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}
